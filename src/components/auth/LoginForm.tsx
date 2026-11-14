@@ -3,9 +3,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { User, Lock } from "lucide-react";
 import { Input, PasswordInput, Button } from "docbook-ui-package";
-import { Link } from "react-router";
+import { Link, useParams } from "react-router";
+import { resolveClinicSlug } from "../../utils/clinicSlug";
+import { useClinicLogin } from "../../hooks/useClinicAuth";
 
-const loginSchema = z.object({
+export const loginSchema = z.object({
   identifier: z
     .string()
     .min(1, "Username or email is required")
@@ -19,11 +21,17 @@ const loginSchema = z.object({
 export type LoginFormData = z.infer<typeof loginSchema>;
 
 interface LoginFormProps {
-  onSubmit?: (data: LoginFormData) => void;
-  isLoading?: boolean;
+  initialSlug?: string;
+  onSubmit?: (data: LoginFormData & { clinicSlug?: string }) => void;
 }
 
-export function LoginForm({ onSubmit, isLoading = false }: LoginFormProps) {
+export function LoginForm({ initialSlug, onSubmit }: LoginFormProps) {
+  const { slug: routeSlug } = useParams<{ slug?: string }>();
+  const clinicSlug = resolveClinicSlug(initialSlug || routeSlug);
+
+  const loginMutation = useClinicLogin();
+  const isLoading = loginMutation.isPending;
+
   const {
     register,
     handleSubmit,
@@ -37,11 +45,29 @@ export function LoginForm({ onSubmit, isLoading = false }: LoginFormProps) {
   });
 
   const handleFormSubmit = (data: LoginFormData) => {
-    onSubmit?.(data);
+    const slugToSend = clinicSlug || undefined;
+
+    if (onSubmit) {
+      onSubmit({ ...data, clinicSlug: slugToSend });
+    } else {
+      loginMutation.mutate({
+        identifier: data.identifier.trim(),
+        password: data.password,
+        clinicSlug: slugToSend,
+      });
+    }
+  };
+
+  const onInvalid = (formErrors: unknown) => {
+    console.warn("LoginForm validation failed:", formErrors);
   };
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="flex flex-col gap-4 w-full">
+    <form
+      onSubmit={handleSubmit(handleFormSubmit, onInvalid)}
+      className="flex flex-col gap-4 w-full"
+    >
+      {/* Username or Email Input */}
       <Input
         label="Username or Email"
         placeholder="Enter your username or email"
@@ -52,6 +78,7 @@ export function LoginForm({ onSubmit, isLoading = false }: LoginFormProps) {
         {...register("identifier")}
       />
 
+      {/* Password Input */}
       <PasswordInput
         label="Password"
         placeholder="Enter your password"
@@ -62,20 +89,23 @@ export function LoginForm({ onSubmit, isLoading = false }: LoginFormProps) {
         {...register("password")}
       />
 
+      {/* Forgot Password Link */}
       <div className="flex justify-end -mt-1">
         <Link
-          to="/forgot-password"
+          to={clinicSlug ? `/${clinicSlug}/forgot-password` : "/forgot-password"}
           className="text-xs sm:text-sm font-medium text-primary hover:underline hover:text-primary-dark transition-colors"
         >
           Forgot Password?
         </Link>
       </div>
 
+      {/* Submit Button */}
       <div className="pt-2">
         <Button
           type="submit"
           variant="primary"
           className="w-full justify-center text-base py-3"
+          isLoading={isLoading}
           disabled={isLoading}
         >
           {isLoading ? "Signing in..." : "Sign In"}

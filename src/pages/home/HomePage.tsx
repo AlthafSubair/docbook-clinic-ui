@@ -1,7 +1,11 @@
 import { Title, Desc, Button } from "docbook-ui-package";
 import { Link } from "react-router";
+import { useAuthStore } from "../../stores/authStore";
+import { Building2, UserCircle, LogOut } from "lucide-react";
 
 export default function HomePage() {
+  const { user, clinic, isAuthenticated, logout } = useAuthStore();
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 sm:p-12 max-w-lg w-full flex flex-col items-center gap-4">
@@ -27,17 +31,59 @@ export default function HomePage() {
             <path d="M8 14h.01" />
           </svg>
         </div>
-        <Title>Welcome to DocBook Clinic</Title>
-        <Desc>
-          Your all-in-one clinic administration portal. Manage appointments, doctors, and patient records seamlessly.
-        </Desc>
-        <div className="pt-4 w-full">
-          <Link to="/login" className="w-full block">
-            <Button variant="primary" className="w-full justify-center py-3">
-              Go to Login
-            </Button>
-          </Link>
-        </div>
+
+        {isAuthenticated && user && clinic ? (
+          <>
+            <Title>Welcome, {user.fullName}!</Title>
+            <Desc>
+              You are currently logged into the clinic administration portal.
+            </Desc>
+
+            <div className="w-full bg-slate-50 rounded-xl p-4 border border-slate-100 flex flex-col gap-2.5 text-left text-sm mt-1">
+              <div className="flex items-center justify-between">
+                <span className="text-secondary-text flex items-center gap-2">
+                  <Building2 className="size-4 text-primary" /> Clinic
+                </span>
+                <span className="font-semibold text-slate-800">{clinic.clinicName}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-secondary-text flex items-center gap-2">
+                  <UserCircle className="size-4 text-primary" /> Role
+                </span>
+                <span className="font-semibold text-primary capitalize">{user.role}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-secondary-text">Username</span>
+                <span className="text-slate-700 font-medium">{user.username}</span>
+              </div>
+            </div>
+
+            <div className="pt-2 w-full">
+              <Button
+                variant="secondary"
+                className="w-full justify-center py-3 flex items-center gap-2 text-red-600 hover:text-red-700"
+                onClick={logout}
+              >
+                <LogOut className="size-4" />
+                Sign Out
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <Title>Welcome to DocBook Clinic</Title>
+            <Desc>
+              Your all-in-one clinic administration portal. Manage appointments, doctors, and patient records seamlessly.
+            </Desc>
+            <div className="pt-4 w-full">
+              <Link to="/login" className="w-full block">
+                <Button variant="primary" className="w-full justify-center py-3">
+                  Go to Login
+                </Button>
+              </Link>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

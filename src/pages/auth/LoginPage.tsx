@@ -1,12 +1,7 @@
 import { Title, Desc } from "docbook-ui-package";
-import LoginForm, { type LoginFormData } from "../../components/auth/LoginForm";
+import LoginForm from "../../components/auth/LoginForm";
 
 export default function LoginPage() {
-  const handleLogin = (data: LoginFormData) => {
-    // Ready for clinic authentication handler / TanStack Mutation
-    console.log("Clinic login attempt:", data);
-  };
-
   return (
     <div className="flex flex-1 flex-col justify-between items-center gap-2 sm:gap-4 px-5 py-3 sm:py-6 sm:px-10 md:py-6 md:px-12 lg:py-8 lg:px-10 xl:p-14 lg:justify-center lg:gap-6 xl:gap-8 w-full bg-background min-h-full">
       {/* Top Header: Title & Description */}
@@ -28,7 +23,7 @@ export default function LoginPage() {
 
       {/* Form Slot Container */}
       <div className="w-full max-w-md shrink-0 pb-2 sm:pb-0">
-        <LoginForm onSubmit={handleLogin} />
+        <LoginForm />
       </div>
     </div>
   );

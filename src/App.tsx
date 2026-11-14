@@ -15,9 +15,13 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/:slug/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/:slug/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/verify-otp" element={<VerifyOtpPage />} />
+          <Route path="/:slug/verify-otp" element={<VerifyOtpPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/:slug/reset-password" element={<ResetPasswordPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
