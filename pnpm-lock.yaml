@@ -743,7 +743,7 @@ packages:
     engines: {node: '>=8'}
 
   docbook-ui-package@file:../docbook-package-ui/docbook-ui-package-0.1.0.tgz:
-    resolution: {integrity: sha512-JCpQfWHdjwH5gimFD19b4TGjxwOX/HCc6DgHaWRw6CpwQTPc1WU2lzTWFYkv6WYAOfd9EpxZN5QE2YO0m7vv+g==, tarball: file:../docbook-package-ui/docbook-ui-package-0.1.0.tgz}
+    resolution: {integrity: sha512-R/6iVHolhgFBU7RMos7B9QePISeWgk1NT7AU4XCZlN2zoyYWV6ATsG1gtQh91Q+lt3i5ikjjpaIsjf44CIUonQ==, tarball: file:../docbook-package-ui/docbook-ui-package-0.1.0.tgz}
     version: 0.1.0
     peerDependencies:
       react: '>=18.0.0'
