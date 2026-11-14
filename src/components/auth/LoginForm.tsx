@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { User, Lock } from "lucide-react";
 import { Input, PasswordInput, Button } from "docbook-ui-package";
+import { Link } from "react-router";
 
 const loginSchema = z.object({
   identifier: z
@@ -60,6 +61,15 @@ export function LoginForm({ onSubmit, isLoading = false }: LoginFormProps) {
         autoComplete="current-password"
         {...register("password")}
       />
+
+      <div className="flex justify-end -mt-1">
+        <Link
+          to="/forgot-password"
+          className="text-xs sm:text-sm font-medium text-primary hover:underline hover:text-primary-dark transition-colors"
+        >
+          Forgot Password?
+        </Link>
+      </div>
 
       <div className="pt-2">
         <Button
