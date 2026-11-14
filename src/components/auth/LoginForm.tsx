@@ -7,7 +7,7 @@ import { Link, useParams } from "react-router";
 import { resolveClinicSlug } from "../../utils/clinicSlug";
 import { useClinicLogin } from "../../hooks/useClinicAuth";
 
-export const loginSchema = z.object({
+const loginSchema = z.object({
   identifier: z
     .string()
     .min(1, "Username or email is required")

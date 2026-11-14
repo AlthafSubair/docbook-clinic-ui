@@ -25,6 +25,7 @@ export default function App() {
           <Route path="/" element={<AppointmentsPage />} />
           <Route path="/doctors" element={<DoctorsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
+
           <Route path="/admin" element={<AdminPage />} />
 
           {/* Scoped Clinic Slug Routes */}

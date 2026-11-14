@@ -34,8 +34,9 @@ export const ClinicTopNavbar = forwardRef<HTMLElement, ClinicTopNavbarProps>(
     const logoutMutation = useClinicLogout();
 
     const isItemActive = (href: string) => {
-      if (href === "/" || href.split("/").length <= 2) {
-        return currentPath === href;
+      const rootPath = brandHref || "/";
+      if (href === rootPath) {
+        return currentPath === rootPath;
       }
       return currentPath === href || currentPath.startsWith(`${href}/`);
     };
