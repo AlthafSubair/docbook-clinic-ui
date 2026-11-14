@@ -24,3 +24,22 @@ export function useClinicLogin() {
     },
   });
 }
+
+export function useClinicLogout() {
+  const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
+
+  return useMutation({
+    mutationFn: async () => {
+      await logout();
+    },
+    onSuccess: () => {
+      toast.success("Logged out successfully");
+      navigate("/login");
+    },
+    onError: () => {
+      toast.error("Logout completed with local cleanup");
+      navigate("/login");
+    },
+  });
+}

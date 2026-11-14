@@ -46,8 +46,18 @@ export async function loginClinic(
   return data;
 }
 
+/**
+ * Log out clinic staff member.
+ * Relies on the HttpOnly refresh cookie.
+ * POST /api/v1/auth/clinic/logout
+ */
 export async function logoutClinic(): Promise<{ message: string }> {
-  const { data } = await api.post<{ message: string }>("/auth/clinic/logout");
+  const { data } = await api.post<{ message: string }>(
+    "/auth/clinic/logout",
+    {},
+    { withCredentials: true }
+  );
+
   return data;
 }
 

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ClinicUser, ClinicProfile, ClinicLoginResponse } from "../lib/api/auth";
+import { logoutClinic, type ClinicUser, type ClinicProfile, type ClinicLoginResponse } from "../lib/api/auth";
 
 interface AuthState {
   user: ClinicUser | null;
@@ -8,7 +8,7 @@ interface AuthState {
   isAuthenticated: boolean;
 
   setAuth: (response: ClinicLoginResponse) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const getInitialAccessToken = () => {
@@ -67,18 +67,25 @@ export const useAuthStore = create<AuthState>((set) => ({
     });
   },
 
-  logout: () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("docbook_clinic_access_token");
-      localStorage.removeItem("docbook_clinic_user");
-      localStorage.removeItem("docbook_clinic_profile");
-    }
+  logout: async () => {
+    try {
+      // Backend revokes session and clears HttpOnly refresh cookie
+      await logoutClinic();
+    } catch (err) {
+      console.warn("Backend clinic logout request failed:", err);
+    } finally {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("docbook_clinic_access_token");
+        localStorage.removeItem("docbook_clinic_user");
+        localStorage.removeItem("docbook_clinic_profile");
+      }
 
-    set({
-      user: null,
-      clinic: null,
-      accessToken: null,
-      isAuthenticated: false,
-    });
+      set({
+        user: null,
+        clinic: null,
+        accessToken: null,
+        isAuthenticated: false,
+      });
+    }
   },
 }));

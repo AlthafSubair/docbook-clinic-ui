@@ -1,10 +1,12 @@
 import { Title, Desc, Button } from "docbook-ui-package";
 import { Link } from "react-router";
 import { useAuthStore } from "../../stores/authStore";
+import { useClinicLogout } from "../../hooks/useClinicAuth";
 import { Building2, UserCircle, LogOut } from "lucide-react";
 
 export default function HomePage() {
-  const { user, clinic, isAuthenticated, logout } = useAuthStore();
+  const { user, clinic, isAuthenticated } = useAuthStore();
+  const logoutMutation = useClinicLogout();
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
@@ -62,10 +64,12 @@ export default function HomePage() {
               <Button
                 variant="secondary"
                 className="w-full justify-center py-3 flex items-center gap-2 text-red-600 hover:text-red-700"
-                onClick={logout}
+                isLoading={logoutMutation.isPending}
+                disabled={logoutMutation.isPending}
+                onClick={() => logoutMutation.mutate()}
               >
                 <LogOut className="size-4" />
-                Sign Out
+                {logoutMutation.isPending ? "Signing Out..." : "Sign Out"}
               </Button>
             </div>
           </>
