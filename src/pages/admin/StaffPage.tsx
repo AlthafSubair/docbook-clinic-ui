@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { Users } from "lucide-react";
 import StaffHeader from "../../components/admin/StaffHeader";
 import StaffMemberCard from "../../components/admin/StaffMemberCard";
+import AddStaffPopover, { type AddStaffFormData } from "../../components/admin/AddStaffPopover";
 import { useClinicUsers } from "../../hooks/useClinicUsers";
 import { ErrorCard, LoadingState } from "docbook-ui-package";
 import type { ClinicUser } from "../../lib/api/clinicUsers";
 
 export default function StaffPage() {
+  const [isAddingUser, setIsAddingUser] = useState(false);
   const { data: queryResponse, isLoading, isError, error, refetch } = useClinicUsers();
 
   const staffList = queryResponse?.data || [];
@@ -19,17 +22,18 @@ export default function StaffPage() {
     console.log("More options clicked for user:", user.fullName);
   };
 
-  const handleAddUser = () => {
-    console.log("Add User clicked");
+  const handleCreateStaff = (formData: AddStaffFormData) => {
+    console.log("Submit new staff member:", formData);
+    setIsAddingUser(false);
   };
 
   return (
     <div className="w-full max-w-md mx-auto flex flex-col gap-3.5 py-1">
-      {/* Extracted Header Component */}
+      {/* Header Bar */}
       <StaffHeader
         totalCount={totalCount}
         isLoading={isLoading}
-        onAddUser={handleAddUser}
+        onAddUser={() => setIsAddingUser(true)}
       />
 
       {/* Loading State from Package */}
@@ -71,6 +75,13 @@ export default function StaffPage() {
           ))}
         </div>
       )}
+
+      {/* Add Staff Member Bottom Sheet Popover */}
+      <AddStaffPopover
+        isOpen={isAddingUser}
+        onClose={() => setIsAddingUser(false)}
+        onSubmit={handleCreateStaff}
+      />
     </div>
   );
 }
