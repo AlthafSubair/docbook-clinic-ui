@@ -1,6 +1,15 @@
 import { api } from "./client";
 
-export type ClinicUserRole = "admin" | "doctor" | "receptionist" | "accountant" | string;
+export const UserRole = {
+  DOCTOR: "doctor",
+  ADMIN: "admin",
+  RECEPTIONIST: "receptionist",
+  ACCOUNTANT: "accountant",
+} as const;
+
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
+
+export type ClinicUserRole = UserRole | string;
 
 export interface ClinicUser {
   userId: string;
@@ -37,6 +46,15 @@ export interface PaginatedClinicUsersResponse {
   };
 }
 
+export interface CreateClinicUserPayload {
+  fullName: string;
+  username: string;
+  email: string;
+  phone?: string;
+  role: UserRole;
+  password: string;
+}
+
 /**
  * Fetch paginated clinic staff users (GET /clinic-users)
  */
@@ -46,5 +64,15 @@ export async function getClinicUsers(
   const { data } = await api.get<PaginatedClinicUsersResponse>("/clinic-users", {
     params,
   });
+  return data;
+}
+
+/**
+ * Create a new clinic staff member (POST /clinic-users)
+ */
+export async function createClinicUser(
+  payload: CreateClinicUserPayload
+): Promise<ClinicUser> {
+  const { data } = await api.post<ClinicUser>("/clinic-users", payload);
   return data;
 }

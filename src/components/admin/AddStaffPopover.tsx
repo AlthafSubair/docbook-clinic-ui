@@ -1,49 +1,43 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { UserPlus, X, User, AtSign, Mail, Phone, ShieldCheck } from "lucide-react";
-import { Input, PasswordInput, Button, OptionButton } from "docbook-ui-package";
-
-export type StaffRole = "doctor" | "receptionist" | "admin" | "accountant";
-
-export interface AddStaffFormData {
-  fullName: string;
-  username: string;
-  email: string;
-  phone: string;
-  role: StaffRole;
-  password: string;
-}
+import { UserPlus, X, User, AtSign, Mail, ShieldCheck } from "lucide-react";
+import {
+  Input,
+  PasswordInput,
+  Button,
+  SelectIndicator,
+  PhoneInput,
+  type PhoneValue,
+} from "docbook-ui-package";
+import { UserRole, type CreateClinicUserPayload } from "../../lib/api/clinicUsers";
+import { addStaffSchema, type AddStaffFormData } from "../../lib/validations/staff";
 
 export interface AddStaffPopoverProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit?: (data: AddStaffFormData) => void;
+  onSubmit?: (data: CreateClinicUserPayload) => Promise<void> | void;
   isSaving?: boolean;
 }
 
-const ROLES: { id: StaffRole; label: string; description: string; color: string }[] = [
+const ROLES: { id: UserRole; label: string; description: string }[] = [
   {
-    id: "doctor",
+    id: UserRole.DOCTOR,
     label: "Doctor",
     description: "Consultations & OPD queue",
-    color: "bg-purple-50 text-purple-700 border-purple-200 active:ring-purple-400",
   },
   {
-    id: "receptionist",
+    id: UserRole.RECEPTIONIST,
     label: "Receptionist",
     description: "Check-in & bookings",
-    color: "bg-emerald-50 text-emerald-700 border-emerald-200 active:ring-emerald-400",
   },
   {
-    id: "admin",
+    id: UserRole.ADMIN,
     label: "Admin",
     description: "Full clinic management",
-    color: "bg-blue-50 text-blue-700 border-blue-200 active:ring-blue-400",
   },
   {
-    id: "accountant",
+    id: UserRole.ACCOUNTANT,
     label: "Accountant",
     description: "Billing & payment reports",
-    color: "bg-amber-50 text-amber-700 border-amber-200 active:ring-amber-400",
   },
 ];
 
@@ -65,17 +59,41 @@ export function AddStaffPopover({
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [role, setRole] = useState<StaffRole>("doctor");
+  const [role, setRole] = useState<UserRole>(UserRole.DOCTOR);
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<Partial<Record<keyof AddStaffFormData, string>>>({});
+  const [phoneKey, setPhoneKey] = useState(0);
+
+  const clearError = (field: keyof AddStaffFormData) => {
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
+  const resetForm = useCallback(() => {
+    setFullName("");
+    setUsername("");
+    setEmail("");
+    setPhone("");
+    setRole(UserRole.DOCTOR);
+    setPassword("");
+    setErrors({});
+    setPhoneKey((k) => k + 1);
+  }, []);
 
   const handleDismiss = useCallback(() => {
     if (isSaving || isClosing) return;
     setIsClosing(true);
     setTimeout(() => {
       setIsClosing(false);
+      resetForm();
       onClose();
     }, 300);
-  }, [isSaving, isClosing, onClose]);
+  }, [isSaving, isClosing, onClose, resetForm]);
 
   // Handle Escape key and body scroll lock
   useEffect(() => {
@@ -111,16 +129,43 @@ export function AddStaffPopover({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit?.({
-      fullName,
-      username,
-      email,
-      phone,
+
+    const result = addStaffSchema.safeParse({
+      fullName: fullName.trim(),
+      username: username.trim(),
+      email: email.trim(),
+      phone: phone.trim() || undefined,
       role,
-      password,
+      password: password.trim(),
     });
+
+    if (!result.success) {
+      const fieldErrors: Partial<Record<keyof AddStaffFormData, string>> = {};
+      for (const issue of result.error.issues) {
+        const field = issue.path[0] as keyof AddStaffFormData;
+        if (field && !fieldErrors[field]) {
+          fieldErrors[field] = issue.message;
+        }
+      }
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setErrors({});
+
+    if (onSubmit) {
+      await onSubmit({
+        fullName: result.data.fullName,
+        username: result.data.username,
+        email: result.data.email,
+        phone: result.data.phone,
+        role: result.data.role,
+        password: result.data.password,
+      });
+      resetForm();
+    }
   };
 
   if (!isOpen && !isClosing) return null;
@@ -183,36 +228,52 @@ export function AddStaffPopover({
         </div>
 
         {/* Scrollable Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4 text-left">
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4 text-left"
+        >
           {/* Full Name */}
           <Input
             label="Full Name"
             icon={<User className="size-4.5" />}
             placeholder="e.g. Dr. Jane Doe"
             value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
+            onChange={(e) => {
+              setFullName(e.target.value);
+              clearError("fullName");
+            }}
+            error={errors.fullName}
             disabled={isSaving}
           />
 
-          {/* Username & Role Grid */}
+          {/* Username & Phone Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <Input
               label="Username"
               icon={<AtSign className="size-4.5" />}
               placeholder="e.g. jane.doe"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                clearError("username");
+              }}
+              error={errors.username}
               disabled={isSaving}
             />
 
-            <Input
+            <PhoneInput
+              key={phoneKey}
               label="Phone Number"
-              type="tel"
-              icon={<Phone className="size-4.5" />}
-              placeholder="e.g. +919876543210"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              defaultCountry="IN"
+              placeholder="98765 43210"
+              error={errors.phone}
               disabled={isSaving}
+              direction="auto"
+              onChange={(val: PhoneValue) => {
+                setPhone(val.e164 || "");
+                clearError("phone");
+              }}
             />
           </div>
 
@@ -223,44 +284,60 @@ export function AddStaffPopover({
             icon={<Mail className="size-4.5" />}
             placeholder="e.g. jane.doe@clinic.com"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              clearError("email");
+            }}
+            error={errors.email}
             disabled={isSaving}
           />
 
-          {/* Role Selection using OptionButton from docbook-ui-package */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-              <ShieldCheck className="size-3.5 text-primary" />
+          {/* Role Selection with SelectIndicator from package */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+              <ShieldCheck className="size-4.5 text-blue-600 stroke-[2.2]" />
               <span>Assigned Role</span>
             </label>
             <div className="grid grid-cols-2 gap-2.5">
               {ROLES.map((r) => {
                 const isSelected = role === r.id;
                 return (
-                  <OptionButton
+                  <button
                     key={r.id}
-                    isSelected={isSelected}
-                    onClick={() => setRole(r.id)}
-                    className="!h-auto !py-2.5 !px-3.5 !flex-col !items-start !justify-start !text-left"
+                    type="button"
+                    onClick={() => {
+                      setRole(r.id);
+                      clearError("role");
+                    }}
+                    className={`group w-full p-3 rounded-xl border-2 flex items-start justify-between text-left transition-[border-color,box-shadow,background-color] duration-150 cursor-pointer outline-none ${
+                      isSelected
+                        ? "border-primary bg-primary/5 shadow-[0_2px_10px_rgba(0,0,255,0.25)] ring-2 ring-primary/20"
+                        : "border-primary/50 bg-white shadow-[0_2px_8px_rgba(0,0,255,0.15)] hover:border-primary hover:shadow-[0_2px_8px_rgba(0,0,255,0.25)]"
+                    }`}
                   >
-                    <span
-                      className={`text-xs sm:text-sm font-bold tracking-tight ${
-                        isSelected ? "text-white" : "text-slate-800"
-                      }`}
-                    >
-                      {r.label}
-                    </span>
-                    <span
-                      className={`text-[10px] sm:text-[11px] font-normal leading-tight mt-0.5 ${
-                        isSelected ? "text-blue-100" : "text-slate-500"
-                      }`}
-                    >
-                      {r.description}
-                    </span>
-                  </OptionButton>
+                    <div className="flex flex-col items-start min-w-0 pr-1.5">
+                      <span className="text-sm font-bold text-slate-900 tracking-tight">
+                        {r.label}
+                      </span>
+                      <span className="text-xs text-slate-500 font-normal leading-tight mt-0.5">
+                        {r.description}
+                      </span>
+                    </div>
+                    <SelectIndicator
+                      isSelected={isSelected}
+                      size="sm"
+                      showArrow={false}
+                      className="mt-0.5 shrink-0"
+                    />
+                  </button>
                 );
               })}
             </div>
+            {errors.role && (
+              <p className="text-xs font-medium text-red-600 mt-0.5 animate-in fade-in duration-150">
+                {errors.role}
+              </p>
+            )}
           </div>
 
           {/* Initial Temporary Password */}
@@ -268,7 +345,11 @@ export function AddStaffPopover({
             label="Initial Password"
             placeholder="At least 8 characters"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              clearError("password");
+            }}
+            error={errors.password}
             disabled={isSaving}
           />
 

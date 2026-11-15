@@ -2,14 +2,15 @@ import { useState } from "react";
 import { Users } from "lucide-react";
 import StaffHeader from "../../components/admin/StaffHeader";
 import StaffMemberCard from "../../components/admin/StaffMemberCard";
-import AddStaffPopover, { type AddStaffFormData } from "../../components/admin/AddStaffPopover";
-import { useClinicUsers } from "../../hooks/useClinicUsers";
+import AddStaffPopover from "../../components/admin/AddStaffPopover";
+import { useClinicUsers, useCreateClinicUser } from "../../hooks/useClinicUsers";
 import { ErrorCard, LoadingState } from "docbook-ui-package";
-import type { ClinicUser } from "../../lib/api/clinicUsers";
+import type { ClinicUser, CreateClinicUserPayload } from "../../lib/api/clinicUsers";
 
 export default function StaffPage() {
   const [isAddingUser, setIsAddingUser] = useState(false);
   const { data: queryResponse, isLoading, isError, error, refetch } = useClinicUsers();
+  const createStaffMutation = useCreateClinicUser();
 
   const staffList = queryResponse?.data || [];
   const totalCount = queryResponse?.meta?.total ?? staffList.length;
@@ -22,9 +23,13 @@ export default function StaffPage() {
     console.log("More options clicked for user:", user.fullName);
   };
 
-  const handleCreateStaff = (formData: AddStaffFormData) => {
-    console.log("Submit new staff member:", formData);
-    setIsAddingUser(false);
+  const handleCreateStaff = async (formData: CreateClinicUserPayload) => {
+    try {
+      await createStaffMutation.mutateAsync(formData);
+      setIsAddingUser(false);
+    } catch {
+      // Error notification handled by mutation onError toast
+    }
   };
 
   return (
@@ -81,6 +86,7 @@ export default function StaffPage() {
         isOpen={isAddingUser}
         onClose={() => setIsAddingUser(false)}
         onSubmit={handleCreateStaff}
+        isSaving={createStaffMutation.isPending}
       />
     </div>
   );
