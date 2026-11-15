@@ -13,6 +13,7 @@ import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import AppointmentsPage from "./pages/appointments/AppointmentsPage";
 import DoctorsPage from "./pages/doctors/DoctorsPage";
 import ReportsPage from "./pages/reports/ReportsPage";
+import AdminLayout from "./pages/admin/AdminLayout";
 import AdminPage from "./pages/admin/AdminPage";
 
 export default function App() {
@@ -26,13 +27,20 @@ export default function App() {
           <Route path="/doctors" element={<DoctorsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
 
-          <Route path="/admin" element={<AdminPage />} />
+          {/* Admin Section with Collapsible Screen-Height Sidebar */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminPage />} />
+          </Route>
 
           {/* Scoped Clinic Slug Routes */}
           <Route path="/:slug" element={<AppointmentsPage />} />
           <Route path="/:slug/doctors" element={<DoctorsPage />} />
           <Route path="/:slug/reports" element={<ReportsPage />} />
-          <Route path="/:slug/admin" element={<AdminPage />} />
+
+          {/* Scoped Admin Section */}
+          <Route path="/:slug/admin" element={<AdminLayout />}>
+            <Route index element={<AdminPage />} />
+          </Route>
         </Route>
 
         {/* Authentication Routes */}
