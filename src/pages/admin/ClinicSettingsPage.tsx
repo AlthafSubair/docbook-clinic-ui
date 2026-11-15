@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ClinicDetailsCard from "../../components/admin/ClinicDetailsCard";
-import EditClinicModal from "../../components/admin/EditClinicModal";
+import EditClinicPopover from "../../components/admin/EditClinicPopover";
 import { useAuthStore } from "../../stores/authStore";
 import { useClinicMe, useUpdateClinicMe } from "../../hooks/useClinic";
 import type { ClinicDetails, UpdateClinicPayload } from "../../lib/api/clinic";
@@ -36,15 +36,15 @@ export default function ClinicSettingsPage() {
 
   return (
     <div className="w-full max-w-md mx-auto flex flex-col gap-3 py-1">
-      {/* Display Component */}
+      {/* 1. Display Component */}
       <ClinicDetailsCard
         clinic={clinicData}
         isLoading={isLoading}
         onEdit={() => setIsEditing(true)}
       />
 
-      {/* Form / Modal Component */}
-      <EditClinicModal
+      {/* 2. Popover / Bottom Sheet Component (Sliding from bottom on mobile) */}
+      <EditClinicPopover
         isOpen={isEditing}
         onClose={() => setIsEditing(false)}
         initialData={{
