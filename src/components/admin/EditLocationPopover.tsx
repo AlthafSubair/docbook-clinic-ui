@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { MapPin, X, LocateFixed, Check } from "lucide-react";
+import { MapPin, X, LocateFixed } from "lucide-react";
 import { Button, Spinner } from "docbook-ui-package";
 import { toast } from "sonner";
 

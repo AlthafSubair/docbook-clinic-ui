@@ -100,11 +100,7 @@ export default function ClinicLayout() {
     (slug ? currentPath === `/${slug}/admin` || currentPath.startsWith(`/${slug}/admin/`) : false);
 
   return (
-    <div
-      className={`w-full flex flex-col bg-slate-50/50 ${
-        isAdmin ? "h-screen overflow-hidden" : "min-h-screen"
-      }`}
-    >
+    <div className="w-full min-h-screen flex flex-col bg-slate-50/50">
       {/* Shared Unified Top Navbar */}
       <TopNavbar
         brandHref={getPath("/")}
@@ -158,7 +154,7 @@ export default function ClinicLayout() {
 
       {/* Main Content Area */}
       {isAdmin ? (
-        <main className="flex flex-1 min-h-0 w-full p-4 pb-20 lg:pb-4 overflow-hidden">
+        <main className="flex flex-1 w-full p-4 pb-20 lg:pb-8">
           <Outlet />
         </main>
       ) : (

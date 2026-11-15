@@ -16,14 +16,14 @@ export default function AdminLayout() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row lg:items-start gap-4 w-full h-full min-h-0">
-      {/* Desktop Collapsible Admin Sidebar (hidden on mobile, full-height on desktop) */}
-      <div className="hidden lg:block shrink-0 h-full">
-        <AdminSidebar activeItemId={activeItemId} onSelect={handleSelect} />
+    <div className="flex flex-col lg:flex-row lg:items-start gap-4 w-full">
+      {/* Desktop Collapsible Admin Sidebar (hidden on mobile, sticky on desktop) */}
+      <div className="hidden lg:block shrink-0 sticky top-20 h-[calc(100vh-6rem)]">
+        <AdminSidebar activeItemId={activeItemId} onSelect={handleSelect} className="h-full" />
       </div>
 
-      {/* Admin Content Area (independent internal scrolling) */}
-      <div className="flex-1 min-w-0 w-full h-full overflow-y-auto custom-scrollbar flex flex-col">
+      {/* Admin Content Area (natural global page scroll) */}
+      <div className="flex-1 min-w-0 w-full flex flex-col">
         <Outlet />
       </div>
     </div>
