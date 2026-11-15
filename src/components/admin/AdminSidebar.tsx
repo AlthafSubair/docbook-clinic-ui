@@ -1,33 +1,14 @@
-import { ShieldCheck, Users, Clock, DollarSign, QrCode } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { Sidebar, type SidebarMenuItem } from "docbook-ui-package";
+import { ADMIN_SECTIONS } from "../../constants/adminNav";
 
-const ADMIN_MENU_ITEMS: SidebarMenuItem[] = [
-  {
-    id: "staff",
-    label: "Staff Accounts",
-    path: "staff",
-    icon: Users,
-    badge: 5,
-  },
-  {
-    id: "clinic",
-    label: "Clinic & Timings",
-    path: "clinic",
-    icon: Clock,
-  },
-  {
-    id: "services",
-    label: "Services & Fees",
-    path: "services",
-    icon: DollarSign,
-  },
-  {
-    id: "qr-code",
-    label: "Clinic QR Code",
-    path: "qr-code",
-    icon: QrCode,
-  },
-];
+const ADMIN_MENU_ITEMS: SidebarMenuItem[] = ADMIN_SECTIONS.map((sec) => ({
+  id: sec.id,
+  label: sec.label,
+  path: sec.id,
+  icon: sec.icon,
+  badge: sec.badge,
+}));
 
 interface AdminSidebarProps {
   className?: string;

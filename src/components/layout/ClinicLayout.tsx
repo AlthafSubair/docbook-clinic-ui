@@ -12,6 +12,7 @@ import {
 import { BottomNav, TopNavbar, type NavItem } from "docbook-ui-package";
 import { useAuthStore } from "../../stores/authStore";
 import { useClinicLogout } from "../../hooks/useClinicAuth";
+import { ADMIN_SECTIONS } from "../../constants/adminNav";
 
 // Router adapter so BottomNav works with React Router's Link
 interface RouterLinkProps extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> {
@@ -41,6 +42,9 @@ export default function ClinicLayout() {
     return path;
   };
 
+  const isStaff = currentPath.endsWith("/staff");
+  const currentAdminTab = isStaff ? "staff" : "clinic-settings";
+
   const navItems: NavItem[] = [
     {
       id: "appointments",
@@ -63,8 +67,15 @@ export default function ClinicLayout() {
     {
       id: "admin",
       label: "Admin",
-      href: getPath("/admin"),
+      href: getPath("/admin/clinic-settings"),
       icon: ShieldCheck,
+      subItems: ADMIN_SECTIONS.map((sec) => ({
+        id: sec.id,
+        label: sec.label,
+        href: getPath(`/admin/${sec.path}`),
+        icon: sec.icon,
+        badge: sec.badge,
+      })),
     },
   ];
 
@@ -141,7 +152,7 @@ export default function ClinicLayout() {
 
       {/* Main Content Area */}
       {isAdmin ? (
-        <main className="flex flex-1 min-h-0 w-full p-4 overflow-hidden">
+        <main className="flex flex-1 min-h-0 w-full p-4 pb-20 lg:pb-4 overflow-hidden">
           <Outlet />
         </main>
       ) : (
@@ -150,12 +161,13 @@ export default function ClinicLayout() {
         </main>
       )}
 
-      {/* Mobile Floating Bottom Dock (hidden on lg and above) */}
+      {/* Mobile Floating Bottom Dock with Upgraded Popover */}
       <BottomNav
         items={navItems}
         currentPath={currentPath}
         linkComponent={RouterLinkAdapter}
         isActive={checkActive}
+        activeSubItemId={currentAdminTab}
         visible={true}
       />
     </div>

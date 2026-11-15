@@ -14,7 +14,8 @@ import AppointmentsPage from "./pages/appointments/AppointmentsPage";
 import DoctorsPage from "./pages/doctors/DoctorsPage";
 import ReportsPage from "./pages/reports/ReportsPage";
 import AdminLayout from "./pages/admin/AdminLayout";
-import AdminPage from "./pages/admin/AdminPage";
+import ClinicSettingsPage from "./pages/admin/ClinicSettingsPage";
+import StaffPage from "./pages/admin/StaffPage";
 
 export default function App() {
   return (
@@ -29,7 +30,9 @@ export default function App() {
 
           {/* Admin Section with Collapsible Screen-Height Sidebar */}
           <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminPage />} />
+            <Route index element={<Navigate to="clinic-settings" replace />} />
+            <Route path="clinic-settings" element={<ClinicSettingsPage />} />
+            <Route path="staff" element={<StaffPage />} />
           </Route>
 
           {/* Scoped Clinic Slug Routes */}
@@ -39,7 +42,9 @@ export default function App() {
 
           {/* Scoped Admin Section */}
           <Route path="/:slug/admin" element={<AdminLayout />}>
-            <Route index element={<AdminPage />} />
+            <Route index element={<Navigate to="clinic-settings" replace />} />
+            <Route path="clinic-settings" element={<ClinicSettingsPage />} />
+            <Route path="staff" element={<StaffPage />} />
           </Route>
         </Route>
 
