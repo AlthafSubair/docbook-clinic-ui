@@ -5,6 +5,7 @@ import EditLocationPopover from "../../components/admin/EditLocationPopover";
 import { useAuthStore } from "../../stores/authStore";
 import { useClinicMe, useUpdateClinicMe } from "../../hooks/useClinic";
 import type { UpdateClinicPayload } from "../../lib/api/clinic";
+import ClinicAccountInfoCard from "../../components/admin/ClinicAccountInfoCard";
 
 export default function ClinicSettingsPage() {
   const [isEditingInfo, setIsEditingInfo] = useState(false);
@@ -43,6 +44,13 @@ export default function ClinicSettingsPage() {
         isLoading={isLoading}
         onEdit={() => setIsEditingInfo(true)}
         onEditLocation={() => setIsEditingLocation(true)}
+      />
+
+      <ClinicAccountInfoCard
+        createdAt={clinicData?.createdAt}
+        updatedAt={clinicData?.updatedAt}
+        isActive={clinicData?.isActive}
+        isLoading={isLoading}
       />
 
       {/* 2. Popover: General Clinic Info */}
