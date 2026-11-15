@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Building2, X } from "lucide-react";
 import { EditClinicForm, type EditClinicFormProps } from "./EditClinicForm";
 
@@ -9,7 +9,7 @@ export interface EditClinicPopoverProps extends EditClinicFormProps {
 
 /**
  * Mobile-First Bottom Popover / Sheet for Editing Clinic Information
- * Bi-directional sliding animation: slides up smoothly on enter and slides down smoothly on exit.
+ * Bi-directional sliding animation: slides up on enter and slides down on exit.
  */
 export function EditClinicPopover({
   isOpen,
@@ -18,51 +18,25 @@ export function EditClinicPopover({
   onSave,
   isSaving = false,
 }: EditClinicPopoverProps) {
-  const [isRendered, setIsRendered] = useState(isOpen);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
-  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Synchronize enter / exit animation phases with isOpen
-  useEffect(() => {
-    if (isOpen) {
-      if (closeTimeoutRef.current) {
-        clearTimeout(closeTimeoutRef.current);
-      }
-      setIsRendered(true);
-      // Double requestAnimationFrame ensures element is attached to DOM before applying CSS transition
-      const frameId = requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsVisible(true);
-        });
-      });
-      return () => cancelAnimationFrame(frameId);
-    } else if (isRendered) {
-      setIsVisible(false);
-      closeTimeoutRef.current = setTimeout(() => {
-        setIsRendered(false);
-      }, 300); // 300ms matches CSS duration-300
-      return () => {
-        if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
-      };
-    }
-  }, [isOpen, isRendered]);
-
-  // Smooth dismiss handler that animates down before closing
-  const handleDismiss = () => {
-    if (isSaving) return;
-    setIsVisible(false);
-    closeTimeoutRef.current = setTimeout(() => {
+  // Smooth dismiss handler: animates out before triggering onClose
+  const handleDismiss = useCallback(() => {
+    if (isSaving || isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
       onClose();
     }, 300);
-  };
+  }, [isSaving, isClosing, onClose]);
 
   // Handle Escape key and lock background body scroll while open
   useEffect(() => {
-    if (!isRendered) return;
+    if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !isSaving) {
+      if (e.key === "Escape") {
         handleDismiss();
       }
     };
@@ -75,7 +49,7 @@ export function EditClinicPopover({
       window.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = originalOverflow;
     };
-  }, [isRendered, isSaving]);
+  }, [isOpen, handleDismiss]);
 
   // Touch drag-down detection (like native mobile comments sheet)
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -92,23 +66,27 @@ export function EditClinicPopover({
     }
   };
 
-  if (!isRendered) return null;
+  if (!isOpen && !isClosing) return null;
 
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-label="Edit Clinic Information"
-      className={`fixed inset-0 z-[100] flex flex-col justify-end bg-slate-950/60 backdrop-blur-xs transition-opacity duration-300 ease-in-out select-none ${
-        isVisible ? "opacity-100" : "opacity-0 pointer-events-none"
+      className={`fixed inset-0 z-[100] flex flex-col justify-end bg-slate-950/60 backdrop-blur-xs select-none ${
+        isClosing
+          ? "animate-out fade-out-0 duration-300"
+          : "animate-in fade-in-0 duration-300"
       }`}
       onClick={handleDismiss}
     >
       {/* Upward / Downward Sliding Popover Container */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`w-full bg-white rounded-t-3xl border-t-2 border-primary/50 shadow-[0_-12px_40px_rgba(0,0,255,0.22),0_-2px_10px_rgba(0,0,0,0.1)] flex flex-col max-h-[90vh] overflow-hidden transition-transform duration-300 ease-out will-change-transform ${
-          isVisible ? "translate-y-0" : "translate-y-full"
+        className={`w-full bg-white rounded-t-3xl border-t-2 border-primary/50 shadow-[0_-12px_40px_rgba(0,0,255,0.22),0_-2px_10px_rgba(0,0,0,0.1)] flex flex-col max-h-[90vh] overflow-hidden will-change-transform ${
+          isClosing
+            ? "animate-out slide-out-to-bottom duration-300 ease-in"
+            : "animate-in slide-in-from-bottom duration-300 ease-out"
         }`}
       >
         {/* Mobile Pull Handle / Drag Indicator */}

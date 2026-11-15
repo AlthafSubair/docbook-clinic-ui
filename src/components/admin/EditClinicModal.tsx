@@ -1,9 +1,12 @@
-/**
- * Re-exporting EditClinicPopover as EditClinicModal for backwards compatibility
- */
-export {
-  EditClinicPopover as EditClinicModal,
-  type EditClinicPopoverProps as EditClinicModalProps,
-  default,
+import EditClinicPopover, {
+  type EditClinicPopoverProps,
 } from "./EditClinicPopover";
-export { EditClinicForm, type EditClinicFormProps } from "./EditClinicForm";
+
+export type EditClinicModalProps = EditClinicPopoverProps;
+
+/**
+ * Backwards compatibility alias for EditClinicPopover
+ */
+export const EditClinicModal = EditClinicPopover;
+
+export default EditClinicPopover;

@@ -21,6 +21,8 @@ export interface UpdateClinicPayload {
   clinicPhone?: string;
   clinicEmail?: string;
   address?: string;
+  latitude?: string;
+  longitude?: string;
   timezone?: string;
 }
 
