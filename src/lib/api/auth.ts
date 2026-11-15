@@ -1,4 +1,5 @@
-import { api } from "./client";
+import axios from "axios";
+import { api, API_BASE_URL } from "./client";
 
 export interface ClinicLoginPayload {
   identifier: string;
@@ -69,5 +70,25 @@ export async function getClinicMe(): Promise<{
     user: ClinicUser;
     clinic: ClinicProfile;
   }>("/auth/clinic/me");
+  return data;
+}
+
+/**
+ * Refresh clinic staff session via single-use token rotation.
+ * The browser automatically attaches the HttpOnly clinicRefreshToken cookie.
+ * POST /api/v1/auth/clinic/refresh
+ */
+export async function refreshClinicSession(): Promise<ClinicLoginResponse> {
+  const { data } = await axios.post<ClinicLoginResponse>(
+    `${API_BASE_URL}/auth/clinic/refresh`,
+    {},
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "*/*",
+      },
+      withCredentials: true,
+    }
+  );
   return data;
 }

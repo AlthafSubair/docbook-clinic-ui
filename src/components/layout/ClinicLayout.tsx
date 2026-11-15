@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, useEffect } from "react";
 import type { AnchorHTMLAttributes } from "react";
 import { Outlet, useLocation, useParams, Link } from "react-router";
 import {
@@ -31,8 +31,14 @@ export default function ClinicLayout() {
   const { slug } = useParams<{ slug?: string }>();
   const location = useLocation();
   const currentPath = location.pathname;
-  const { user, clinic } = useAuthStore();
+  const { user, clinic, isAuthenticated, refreshSession } = useAuthStore();
   const logoutMutation = useClinicLogout();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      refreshSession();
+    }
+  }, [isAuthenticated, refreshSession]);
 
   // Prefix routes with slug if in slug context
   const getPath = (path: string) => {
